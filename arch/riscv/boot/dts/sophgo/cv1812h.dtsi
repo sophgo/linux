@@ -4,7 +4,9 @@
  */
 
 #include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/pinctrl/pinctrl-cv1812h.h>
 #include "cv18xx.dtsi"
+#include "cv181x.dtsi"
 
 / {
 	compatible = "sophgo,cv1812h";
@@ -12,6 +14,43 @@
 	memory@80000000 {
 		device_type = "memory";
 		reg = <0x80000000 0x10000000>;
+	};
+
+	soc {
+		pinctrl: pinctrl@3001000 {
+			compatible = "sophgo,cv1812h-pinctrl";
+			reg = <0x03001000 0x1000>,
+			      <0x05027000 0x1000>;
+			reg-names = "sys", "rtc";
+		};
+	};
+
+	thermal-zones {
+		soc_thermal_0: soc_thermal_0 {
+			polling-delay-passive = <1000>; /* milliseconds */
+			polling-delay = <1000>; /* milliseconds */
+			thermal-sensors = <&soc_temp 0>;
+
+			trips {
+				soc_thermal_trip_0: soc_thermal_trip_0 {
+					temperature = <100000>; /* millicelsius */
+					hysteresis = <5000>; /* millicelsius */
+					type = "passive";
+				};
+
+				soc_thermal_trip_1: soc_thermal_trip_1 {
+					temperature = <110000>; /* millicelsius */
+					hysteresis = <5000>; /* millicelsius */
+					type = "passive";
+				};
+
+				soc_thermal_crtical_0: soc_thermal_crtical_0 {
+					temperature = <130000>; /* millicelsius */
+					hysteresis = <0>; /* millicelsius */
+					type = "critical";
+				};
+			};
+		};
 	};
 };
 

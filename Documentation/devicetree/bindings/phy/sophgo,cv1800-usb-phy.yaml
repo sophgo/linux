@@ -1,0 +1,71 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/phy/sophgo,cv1800-usb-phy.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: Sophgo CV18XX/SG200X USB 2.0 PHY
+
+maintainers:
+  - Inochi Amaoto <inochiama@outlook.com>
+
+properties:
+  compatible:
+    const: sophgo,cv1800-usb-phy
+
+  reg:
+    maxItems: 1
+
+  "#phy-cells":
+    const: 0
+
+  clocks:
+    items:
+      - description: PHY clock
+      - description: PHY app clock
+      - description: PHY stb clock
+      - description: PHY lpm clock
+
+  clock-names:
+    items:
+      - const: phy
+      - const: app
+      - const: stb
+      - const: lpm
+
+  vbus_det-gpios:
+    description: GPIO to the USB OTG VBUS detect pin. This should not be
+      defined if vbus_det pin and switch pin are connected, which may
+      break the VBUS detection.
+    maxItems: 1
+
+  sophgo,switch-gpios:
+    description: GPIO array for the phy to control connected switch. For
+      host mode, the driver will set these GPIOs to low one by one. For
+      device mode, the driver will set these GPIOs to high in reverse
+      order. For a reference design, see item description.
+    minItems: 1
+    items:
+      - description: USB switch operation mode
+      - description: USB switch host power control
+
+required:
+  - compatible
+  - "#phy-cells"
+  - clocks
+  - clock-names
+
+additionalProperties: false
+
+examples:
+  - |
+    phy@48 {
+      compatible = "sophgo,cv1800-usb-phy";
+      reg = <0x48 0x4>;
+      #phy-cells = <0>;
+      clocks = <&clk 92>, <&clk 93>,
+               <&clk 94>, <&clk 95>;
+      clock-names = "phy", "app", "stb", "lpm";
+    };
+
+...

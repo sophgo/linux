@@ -10,12 +10,13 @@
 #include <linux/of.h>
 #include <linux/of_address.h>
 #include <linux/of_irq.h>
+#include <linux/platform_device.h>
 #include <linux/clk.h>
 #include <linux/reset.h>
 #include <linux/sched_clock.h>
 
-static int __init timer_get_base_and_rate(struct device_node *np,
-				    void __iomem **base, u32 *rate)
+static int timer_get_base_and_rate(struct device_node *np,
+				   void __iomem **base, u32 *rate)
 {
 	struct clk *timer_clk;
 	struct clk *pclk;
@@ -82,16 +83,16 @@ out_pclk_disable:
 	return ret;
 }
 
-static int __init add_clockevent(struct device_node *event_timer)
+static int add_clockevent(struct platform_device *pdev, struct device_node *event_timer)
 {
 	void __iomem *iobase;
 	struct dw_apb_clock_event_device *ced;
 	u32 irq, rate;
 	int ret = 0;
 
-	irq = irq_of_parse_and_map(event_timer, 0);
-	if (irq == 0)
-		panic("No IRQ for clock event timer");
+	irq = platform_get_irq(pdev, 0);
+	if (irq < 0)
+		return irq;
 
 	ret = timer_get_base_and_rate(event_timer, &iobase, &rate);
 	if (ret)
@@ -110,7 +111,7 @@ static int __init add_clockevent(struct device_node *event_timer)
 static void __iomem *sched_io_base;
 static u32 sched_rate;
 
-static int __init add_clocksource(struct device_node *source_timer)
+static int add_clocksource(struct device_node *source_timer)
 {
 	void __iomem *iobase;
 	struct dw_apb_clocksource *cs;
@@ -144,12 +145,12 @@ static u64 notrace read_sched_clock(void)
 	return ~readl_relaxed(sched_io_base);
 }
 
-static const struct of_device_id sptimer_ids[] __initconst = {
+static const struct of_device_id sptimer_ids[] = {
 	{ .compatible = "picochip,pc3x2-rtc" },
 	{ /* Sentinel */ },
 };
 
-static void __init init_sched_clock(void)
+static void init_sched_clock(void)
 {
 	struct device_node *sched_timer;
 
@@ -175,14 +176,15 @@ static struct delay_timer dw_apb_delay_timer = {
 #endif
 
 static int num_called;
-static int __init dw_apb_timer_init(struct device_node *timer)
+static int dw_apb_timer_probe(struct platform_device *pdev)
 {
+	struct device *dev = &pdev->dev;
 	int ret = 0;
 
 	switch (num_called) {
 	case 1:
 		pr_debug("%s: found clocksource timer\n", __func__);
-		ret = add_clocksource(timer);
+		ret = add_clocksource(dev->of_node);
 		if (ret)
 			return ret;
 		init_sched_clock();
@@ -193,7 +195,7 @@ static int __init dw_apb_timer_init(struct device_node *timer)
 		break;
 	default:
 		pr_debug("%s: found clockevent timer\n", __func__);
-		ret = add_clockevent(timer);
+		ret = add_clockevent(pdev, dev->of_node);
 		if (ret)
 			return ret;
 		break;
@@ -203,7 +205,20 @@ static int __init dw_apb_timer_init(struct device_node *timer)
 
 	return 0;
 }
-TIMER_OF_DECLARE(pc3x2_timer, "picochip,pc3x2-timer", dw_apb_timer_init);
-TIMER_OF_DECLARE(apb_timer_osc, "snps,dw-apb-timer-osc", dw_apb_timer_init);
-TIMER_OF_DECLARE(apb_timer_sp, "snps,dw-apb-timer-sp", dw_apb_timer_init);
-TIMER_OF_DECLARE(apb_timer, "snps,dw-apb-timer", dw_apb_timer_init);
+
+static const struct of_device_id dw_apb_timer_ids[] = {
+	{ .compatible = "picochip,pc3x2-timer" },
+	{ .compatible = "snps,dw-apb-timer-osc" },
+	{ .compatible = "snps,dw-apb-timer-sp" },
+	{ .compatible = "snps,dw-apb-timer" },
+	{ /* sentinel */ }
+};
+
+static struct platform_driver dw_apb_timer_driver = {
+	.probe	= dw_apb_timer_probe,
+	.driver	= {
+		.name		= "dw_apb_timer",
+		.of_match_table	= dw_apb_timer_ids,
+	},
+};
+module_platform_driver(dw_apb_timer_driver);

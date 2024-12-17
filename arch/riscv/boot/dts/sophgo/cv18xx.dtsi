@@ -7,6 +7,7 @@
 #include <dt-bindings/clock/sophgo,cv1800.h>
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/reset/sophgo,cv1800b-reset.h>
 
 / {
 	#address-cells = <1>;
@@ -55,10 +56,117 @@
 		dma-noncoherent;
 		ranges;
 
+		timer0: timer@030a0000 {
+			compatible = "snps,dw-apb-timer";
+			reg = <0x030a0000 0x14>;
+			interrupts = <79 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&osc>;
+			clock-names = "timer";
+			resets = <&rst RST_TIMER0>;
+			status = "disabled";
+		};
+
+		timer1: timer@030a0014 {
+			compatible = "snps,dw-apb-timer";
+			reg = <0x030a0014 0x14>;
+			interrupts = <80 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&osc>;
+			clock-names = "timer";
+			resets = <&rst RST_TIMER1>;
+			status = "disabled";
+		};
+
+		timer2: timer@030a0028 {
+			compatible = "snps,dw-apb-timer";
+			reg = <0x030a0028 0x14>;
+			interrupts = <81 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&osc>;
+			clock-names = "timer";
+			resets = <&rst RST_TIMER2>;
+			status = "disabled";
+		};
+
+		timer3: timer@030a003c {
+			compatible = "snps,dw-apb-timer";
+			reg = <0x030a003c 0x14>;
+			interrupts = <82 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&osc>;
+			clock-names = "timer";
+			resets = <&rst RST_TIMER3>;
+			status = "disabled";
+		};
+
+		timer4: timer@030a0050 {
+			compatible = "snps,dw-apb-timer";
+			reg = <0x030a0050 0x14>;
+			interrupts = <83 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&osc>;
+			clock-names = "timer";
+			resets = <&rst RST_TIMER4>;
+			status = "disabled";
+		};
+
+		timer5: timer@30a0064 {
+			compatible = "snps,dw-apb-timer";
+			reg = <0x030a0064 0x14>;
+			interrupts = <84 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&osc>;
+			clock-names = "timer";
+			resets = <&rst RST_TIMER5>;
+			status = "disabled";
+		};
+
+		timer6: timer@030a0078 {
+			compatible = "snps,dw-apb-timer";
+			reg = <0x030a0078 0x14>;
+			interrupts = <85 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&osc>;
+			clock-names = "timer";
+			resets = <&rst RST_TIMER6>;
+			status = "disabled";
+		};
+
+		timer7: timer@030a008c {
+			compatible = "snps,dw-apb-timer";
+			reg = <0x030a008c 0x14>;
+			interrupts = <86 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&osc>;
+			clock-names = "timer";
+			resets = <&rst RST_TIMER7>;
+			status = "disabled";
+		};
+
 		clk: clock-controller@3002000 {
 			reg = <0x03002000 0x1000>;
 			clocks = <&osc>;
 			#clock-cells = <1>;
+		};
+
+		topctrl: syscon@3000000 {
+			compatible = "sophgo,cv1800-top-syscon",
+				     "syscon", "simple-mfd";
+			reg = <0x03000000 0x1000>;
+			
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			usbphy: phy@48 {
+				compatible = "sophgo,cv1800-usb-phy";
+				reg = <0x48 0x4>;
+				#phy-cells = <0>;
+				clocks = <&clk 92>, <&clk 93>,
+					<&clk 94>, <&clk 95>;
+				clock-names = "phy", "app", "stb", "lpm";
+				vbus_det-gpios = <&portb 6 GPIO_ACTIVE_HIGH>;
+				sophgo,switch-gpios = <&porta 30 GPIO_ACTIVE_HIGH>, 
+						      <&portb 5 GPIO_ACTIVE_HIGH>;
+			};
+		};
+
+		rst: reset-controller@3003000 {
+			compatible = "sophgo,cv1800b-reset";
+			reg = <0x03003000 0x1000>;
+			#reset-cells = <1>;
 		};
 
 		gpio0: gpio@3020000 {
@@ -133,6 +241,36 @@
 			};
 		};
 
+		saradc: adc@30f0000 {
+			compatible = "sophgo,cv1800b-saradc";
+			reg = <0x030f0000 0x1000>;
+			clocks = <&clk CLK_SARADC>;
+			interrupts = <100 IRQ_TYPE_LEVEL_HIGH>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "disabled";
+
+			channel@0 {
+				reg = <0>;
+			};
+
+			channel@1 {
+				reg = <1>;
+			};
+
+			channel@2 {
+				reg = <2>;
+			};
+		};
+
+		soc_temp: thermal-sensor@30e0000 {
+			compatible = "sophgo,cv1800-thermal";
+			reg = <0x30e0000 0x100>;
+			clocks = <&clk CLK_TEMPSEN>;
+			interrupts = <16 IRQ_TYPE_LEVEL_HIGH>;
+			#thermal-sensor-cells = <0>;
+		};
+
 		i2c0: i2c@4000000 {
 			compatible = "snps,designware-i2c";
 			reg = <0x04000000 0x10000>;
@@ -188,12 +326,62 @@
 			status = "disabled";
 		};
 
+		gmac0: ethernet@4070000 {
+			compatible = "snps,dwmac-3.70a";
+			reg = <0x04070000 0x10000>;
+			clocks = <&clk CLK_AXI4_ETH0>, <&clk CLK_ETH0_500M>;
+			clock-names = "stmmaceth", "ptp_ref";
+			interrupts = <31 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "macirq";
+			phy-handle = <&phy0>;
+			phy-mode = "rmii";
+			rx-fifo-depth = <8192>;
+			tx-fifo-depth = <8192>;
+			snps,multicast-filter-bins = <0>;
+			snps,perfect-filter-entries = <1>;
+			snps,aal;
+			snps,txpbl = <8>;
+			snps,rxpbl = <8>;
+			snps,mtl-rx-config = <&gmac0_mtl_rx_setup>;
+			snps,mtl-tx-config = <&gmac0_mtl_tx_setup>;
+			snps,axi-config = <&gmac0_stmmac_axi_setup>;
+			status = "disabled";
+
+			mdio {
+				compatible = "snps,dwmac-mdio";
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				phy0: phy@0 {
+					compatible = "ethernet-phy-ieee802.3-c22";
+					reg = <0>;
+				};
+			};
+
+			gmac0_mtl_rx_setup: rx-queues-config {
+				snps,rx-queues-to-use = <1>;
+				queue0 {};
+			};
+
+			gmac0_mtl_tx_setup: tx-queues-config {
+				snps,tx-queues-to-use = <1>;
+				queue0 {};
+			};
+
+			gmac0_stmmac_axi_setup: stmmac-axi-config {
+				snps,blen = <16 8 4 0 0 0 0>;
+				snps,rd_osr_lmt = <2>;
+				snps,wr_osr_lmt = <1>;
+			};
+		};
+
 		uart0: serial@4140000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0x04140000 0x100>;
 			interrupts = <44 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&clk CLK_UART0>, <&clk CLK_APB_UART0>;
 			clock-names = "baudclk", "apb_pclk";
+			resets = <&rst RST_UART0>;
 			reg-shift = <2>;
 			reg-io-width = <4>;
 			status = "disabled";
@@ -205,6 +393,7 @@
 			interrupts = <45 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&clk CLK_UART1>, <&clk CLK_APB_UART1>;
 			clock-names = "baudclk", "apb_pclk";
+			resets = <&rst RST_UART1>;
 			reg-shift = <2>;
 			reg-io-width = <4>;
 			status = "disabled";
@@ -216,6 +405,7 @@
 			interrupts = <46 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&clk CLK_UART2>, <&clk CLK_APB_UART2>;
 			clock-names = "baudclk", "apb_pclk";
+			resets = <&rst RST_UART2>;
 			reg-shift = <2>;
 			reg-io-width = <4>;
 			status = "disabled";
@@ -227,9 +417,24 @@
 			interrupts = <47 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&clk CLK_UART3>, <&clk CLK_APB_UART3>;
 			clock-names = "baudclk", "apb_pclk";
+			resets = <&rst RST_UART3>;
 			reg-shift = <2>;
 			reg-io-width = <4>;
 			status = "disabled";
+		};
+
+		usb: usb@04340000 {
+			compatible = "sophgo,cv1800-usb", "snps,dwc2";
+			reg = <0x04340000 0x10000>;
+			interrupts = <30 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk CLK_AXI4_USB>,
+				 <&clk CLK_APB_USB>,
+				 <&clk CLK_USB_125M>,
+				 <&clk CLK_USB_33K>,
+				 <&clk CLK_USB_12M>;
+			clock-names = "clk_axi", "clk_apb", "clk_125m", "clk_33k", "clk_12m";
+			phys = <&usbphy>;
+			phy-names = "usb2-phy";
 		};
 
 		spi0: spi@4180000 {
@@ -313,7 +518,24 @@
 			status = "disabled";
 		};
 
+		watchdog: watchdog@3010000{
+			compatible = "snps,dw-wdt";
+			reg = <0x3010000 0x100>;
+			interrupts = <58 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&pclk>;
+			resets = <&rst RST_WDT>;
+			status = "disabled";
+		};
+
+		pclk: pclk {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <25000000>;
+		};
+
+
 		plic: interrupt-controller@70000000 {
+			compatible = "riscv,plic0";
 			reg = <0x70000000 0x4000000>;
 			interrupts-extended = <&cpu0_intc 11>, <&cpu0_intc 9>;
 			interrupt-controller;
@@ -323,8 +545,50 @@
 		};
 
 		clint: timer@74000000 {
+			compatible = "riscv,clint0";
 			reg = <0x74000000 0x10000>;
 			interrupts-extended = <&cpu0_intc 3>, <&cpu0_intc 7>;
 		};
+
+
+		rtc: rtc@5025000 {
+			compatible = "sophgo,cv1800-rtc";
+			reg = <0x5025000 0x2000>;
+			interrupts = <17 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&osc>;
+		};
+
+		pwm0: pwm@3060000 {
+			compatible = "sophgo,cv1800-pwm";
+			reg = <0x3060000 0x1000>;
+			clocks = <&clk CLK_PWM>;
+			#pwm-cells = <3>;
+			status = "disabled";
+		};
+
+		pwm1: pwm@3061000 {
+			compatible = "sophgo,cv1800-pwm";
+			reg = <0x3061000 0x1000>;
+			clocks = <&clk CLK_PWM>;
+			#pwm-cells = <3>;
+			status = "disabled";
+		};
+
+		pwm2: pwm@3062000 {
+			compatible = "sophgo,cv1800-pwm";
+			reg = <0x3062000 0x1000>;
+			clocks = <&clk CLK_PWM>;
+			#pwm-cells = <3>;
+			status = "disabled";
+		};
+
+		pwm3: pwm@3063000 {
+			compatible = "sophgo,cv1800-pwm";
+			reg = <0x3063000 0x1000>;
+			clocks = <&clk CLK_PWM>;
+			#pwm-cells = <3>;
+			status = "disabled";
+		};
+
 	};
 };

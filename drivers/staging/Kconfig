@@ -13,7 +13,6 @@ menuconfig STAGING
 	  Using any of these drivers will taint your kernel which might
 	  affect support options from both the community, and various
 	  commercial support organizations.
-
 	  If you wish to work on these drivers, to help improve them, or
 	  to report problems you have with them, please see the
 	  drivers/staging/<driver_name>/TODO file to see what needs to be
@@ -63,5 +62,7 @@ source "drivers/staging/axis-fifo/Kconfig"
 source "drivers/staging/fieldbus/Kconfig"
 
 source "drivers/staging/vme_user/Kconfig"
+
+source "drivers/staging/android/Kconfig"
 
 endif # STAGING

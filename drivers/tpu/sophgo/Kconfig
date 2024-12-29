@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: GPL-2.0
+
+config CV1800_TPU
+	depends on ARCH_SOPHGO
+	tristate "TPU driver for sophgo cv1800"
+	help
+	  If you say yes here you get support for TPU in Sophgo CV1800 SoC.

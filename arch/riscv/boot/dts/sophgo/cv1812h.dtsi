@@ -25,6 +25,26 @@
 		};
 	};
 
+	reserved-memory {
+		#size-cells = <1>;
+		#address-cells = <1>;
+		ranges;
+
+		ion_reserved: ion {
+			compatible = "ion-region";
+			size = <0xaa00000>;
+		};
+	};
+
+	cvitek-ion {
+		compatible = "cvitek,cvitek-ion";
+
+		heap_carveout@0 {
+			compatible = "cvitek,carveout";
+			memory-region = <&ion_reserved>;
+		};
+	};
+
 	thermal-zones {
 		soc_thermal_0: soc_thermal_0 {
 			polling-delay-passive = <1000>; /* milliseconds */

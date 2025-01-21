@@ -81,6 +81,10 @@
 	status = "okay";
 };
 
+&i2c4 {
+	status = "okay";
+};
+
 &spi0 {
 	status = "okay";
 };
@@ -99,6 +103,8 @@
 
 &pwm0 {
         status = "okay";
+	pinctrl-0 = <&pwm1_cfg>;
+	pinctrl-names = "default";
 };
 
 &pwm1 {
@@ -139,4 +145,22 @@
 			power-source = <3300>;
 		};
 	};
+
+	pwm3_cfg: pwm3-cfg {
+		pwm-pins {
+			pinmux = <PINMUX(PIN_VIVO_D1, 6)>;
+			// bias-pull-up;
+			drive-strength-microamp = <16100>;
+			power-source = <3300>;
+		};
+	};
+	pwm1_cfg: pwm1-cfg {
+		pwm-pins {
+			pinmux = <PINMUX(PIN_VIVO_D10, 0)>;
+			bias-pull-up;
+			drive-strength-microamp = <16100>;
+			power-source = <3300>;
+		};
+	};
+	
 };

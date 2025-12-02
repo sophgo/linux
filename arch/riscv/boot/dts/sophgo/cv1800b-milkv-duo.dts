@@ -39,7 +39,7 @@
 		compatible = "gpio-leds";
 
 		blue_led {
-			gpios = <&porta 24 GPIO_ACTIVE_HIGH>;
+			gpios = <&portc 22 GPIO_ACTIVE_HIGH>;
 		};
 	};
 };

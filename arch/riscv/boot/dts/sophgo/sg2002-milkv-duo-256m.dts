@@ -5,6 +5,7 @@
 
 /dts-v1/;
 
+#include <dt-bindings/leds/common.h>
 #include "sg2002.dtsi"
 
 / {
@@ -25,6 +26,14 @@
 
 	chosen {
 		stdout-path = "serial0:115200n8";
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		blue_led {
+			gpios = <&porte 2 GPIO_ACTIVE_HIGH>;
+		};
 	};
 };
 

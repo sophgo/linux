@@ -5,6 +5,7 @@
 
 /dts-v1/;
 
+#include <dt-bindings/leds/common.h>
 #include "cv1800b.dtsi"
 
 / {
@@ -31,6 +32,14 @@
 		coprocessor_rtos: region@83f40000 {
 			reg = <0x83f40000 0xc0000>;
 			no-map;
+		};
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		blue_led {
+			gpios = <&porta 24 GPIO_ACTIVE_HIGH>;
 		};
 	};
 };

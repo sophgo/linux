@@ -38,6 +38,7 @@
 #define RST_PWM1			33
 #define RST_PWM2			34
 #define RST_PWM3			35
+#define RST_GPIO4			36
 #define RST_SPI0			40
 #define RST_SPI1			41
 #define RST_SPI2			42
